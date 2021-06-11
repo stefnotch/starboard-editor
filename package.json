@@ -2,6 +2,7 @@
   "name": "starboard-editor",
   "version": "0.0.1",
   "scripts": {
+    "start": "vite",
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
@@ -9,7 +10,8 @@
   },
   "dependencies": {
     "bulma": "^0.9.2",
-    "starboard-wrap": "^0.3.3",
+    "starboard-notebook": "^0.12.0",
+    "starboard-wrap": "^0.4.0",
     "vue": "^3.1.1"
   },
   "devDependencies": {

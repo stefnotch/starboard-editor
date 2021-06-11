@@ -41,6 +41,13 @@ starboard-embed {
 .starboard-container,
 starboard-embed,
 starboard-embed > iframe {
-  height: 100% !important;
+  height: 100vh;
+  border: 0px;
+  outline: 0px;
+  padding: 0px;
+  margin: 0px;
+  box-sizing: border-box;
+  max-height: 100vh;
+  display: block;
 }
 </style>
