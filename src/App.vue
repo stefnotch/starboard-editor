@@ -1,14 +1,18 @@
 <template>
-  <div ref="starboardWrapContainer" class="starboard-container"></div>
+  <div class="columns is-gapless">
+    <side-bar class="column is-one-fifth"></side-bar>
+    <div ref="starboardWrapContainer" class="starboard-container column"></div>
+    <div class="column is-one-fifth"></div>
+  </div>
 </template>
 
 <script lang="ts">
 import { ref, defineComponent, watchEffect, watch, computed } from "vue";
-import HelloWorld from "./components/HelloWorld.vue";
+import SideBar from "./components/SideBar.vue";
 import { StarboardEmbed } from "starboard-wrap";
 
 export default defineComponent({
-  components: { HelloWorld },
+  components: { SideBar },
   setup() {
     const starboardWrapContainer = ref<HTMLElement>();
 
@@ -18,9 +22,8 @@ export default defineComponent({
         value?.appendChild(
           new StarboardEmbed({
             notebookContent: "",
-            autoResize: false,
             preventNavigationWithUnsavedChanges: true,
-
+            // TODO: If you replace the src with something, make sure that it's still hosted on a different domain!
             // src:
           })
         );
