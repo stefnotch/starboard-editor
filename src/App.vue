@@ -1,4 +1,27 @@
 <template>
+  <nav class="navbar is-transparent">
+    <a
+      role="button"
+      class="navbar-burger menu-burger is-active"
+      aria-label="menu"
+      aria-expanded="false"
+    >
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+    <div class="navbar-item has-dropdown is-hoverable">
+      <a class="navbar-link"> File </a>
+      <div class="navbar-dropdown is-boxed">
+        <a class="navbar-item"> Open File </a>
+        <a class="navbar-item"> Open Folder </a>
+        <hr class="navbar-divider" />
+        <a class="navbar-item"> Save </a>
+        <a class="navbar-item"> Share </a>
+        <!-- TODO: Import/export Markdown -->
+      </div>
+    </div>
+  </nav>
   <div class="columns is-gapless">
     <side-bar class="column is-one-fifth" @showFile="showFile"></side-bar>
     <div ref="starboardWrapContainer" class="starboard-container column"></div>
@@ -40,6 +63,12 @@ export default defineComponent({
             new StarboardEmbed({
               notebookContent,
               preventNavigationWithUnsavedChanges: true,
+              onSaveMessage: (payload) => {
+                // Save notebook
+              },
+              onContentUpdateMessage: (payload) => {
+                // Keep a periodic localstorage backup
+              },
               // TODO: If you replace the src with something, make sure that it's still hosted on a different domain!
               // src:
             })
@@ -74,5 +103,10 @@ starboard-embed > iframe {
   box-sizing: border-box;
   max-height: 100vh;
   display: block;
+}
+
+nav .menu-burger {
+  display: block;
+  margin-left: initial;
 }
 </style>
