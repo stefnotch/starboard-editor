@@ -20,26 +20,34 @@ export default defineComponent({
 
     const urlParams = useURLParams();
     const urlsCompressed = urlParams.getParam("c");
-    const initialNotebookContent = urlParams.getParam("notebook") ?? "";
-    if (urlsCompressed || true) {
+    let initialNotebookContent = Promise.resolve("");
+    if (urlsCompressed) {
       const compression = useCompression();
-      console.log(compression);
+      initialNotebookContent = compression.then((c) =>
+        c.decompressFromUrl(urlParams.getParam("notebook") ?? "")
+      );
+    } else {
+      initialNotebookContent = Promise.resolve(
+        urlParams.getParam("notebook") ?? ""
+      );
     }
 
-    watch(
-      starboardWrapContainer,
-      (value) => {
-        value?.appendChild(
-          new StarboardEmbed({
-            notebookContent: initialNotebookContent,
-            preventNavigationWithUnsavedChanges: true,
-            // TODO: If you replace the src with something, make sure that it's still hosted on a different domain!
-            // src:
-          })
-        );
-      },
-      { immediate: true }
-    );
+    initialNotebookContent.then((notebookContent) => {
+      watch(
+        starboardWrapContainer,
+        (value) => {
+          value?.appendChild(
+            new StarboardEmbed({
+              notebookContent,
+              preventNavigationWithUnsavedChanges: true,
+              // TODO: If you replace the src with something, make sure that it's still hosted on a different domain!
+              // src:
+            })
+          );
+        },
+        { immediate: true }
+      );
+    });
 
     function showFile(file: { name: string; content: string }) {
       // TODO: Load this file
