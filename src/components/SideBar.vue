@@ -5,6 +5,8 @@
       <ul class="menu-list">
         <li><button @click="openFile">Open File</button></li>
         <li><button @click="saveFile">Save File</button></li>
+        <!-- TODO: Get shareable url -->
+        <li><button @click="saveFile">Share Notebook</button></li>
         <li><button @click="openFolder">Open Directory</button></li>
       </ul>
       <p class="menu-label">Files</p>

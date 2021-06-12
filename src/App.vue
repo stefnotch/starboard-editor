@@ -11,6 +11,7 @@ import { ref, defineComponent, watchEffect, watch, computed } from "vue";
 import SideBar from "./components/SideBar.vue";
 import { StarboardEmbed } from "starboard-wrap";
 import { useURLParams } from "./useUrlParams";
+import { useCompression } from "./useCompression";
 
 export default defineComponent({
   components: { SideBar },
@@ -18,7 +19,12 @@ export default defineComponent({
     const starboardWrapContainer = ref<HTMLElement>();
 
     const urlParams = useURLParams();
+    const urlsCompressed = urlParams.getParam("c");
     const initialNotebookContent = urlParams.getParam("notebook") ?? "";
+    if (urlsCompressed || true) {
+      const compression = useCompression();
+      console.log(compression);
+    }
 
     watch(
       starboardWrapContainer,
