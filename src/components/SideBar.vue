@@ -3,11 +3,27 @@
     <aside class="menu sidebar">
       <p class="menu-label">General</p>
       <ul class="menu-list">
-        <li><button @click="openFile">Open File</button></li>
-        <li><button @click="saveFile">Save File</button></li>
+        <li>
+          <button class="button is-small is-fullwidth" @click="openFile">
+            Open File
+          </button>
+        </li>
+        <li>
+          <button class="button is-small is-fullwidth" @click="saveFile">
+            Save File
+          </button>
+        </li>
         <!-- TODO: Get shareable url -->
-        <li><button @click="saveFile">Share Notebook</button></li>
-        <li><button @click="openFolder">Open Directory</button></li>
+        <li>
+          <button class="button is-small is-fullwidth" @click="saveFile">
+            Share Notebook
+          </button>
+        </li>
+        <li>
+          <button class="button is-small is-fullwidth" @click="openFolder">
+            Open Directory
+          </button>
+        </li>
       </ul>
       <p class="menu-label">Files</p>
       <ul class="menu-list">
@@ -48,7 +64,7 @@ import {
   FileWithHandle,
   FileWithDirectoryHandle,
 } from "browser-fs-access";
-import { get, set } from "idb-keyval";
+import { useNotebookStorage } from "../useNotebookStorage";
 
 export default defineComponent({
   components: {},
@@ -62,8 +78,7 @@ export default defineComponent({
       );
     }
 
-    const files = shallowRef<FileWithHandle[]>([]);
-    const folders = shallowRef<FileWithDirectoryHandle[]>([]);
+    const notebookStorage = useNotebookStorage();
 
     context.emit("showFile", { name: "cat", content: "lorem ipsum" });
 
@@ -75,7 +90,7 @@ export default defineComponent({
         });
         selectedFiles.forEach((f) => console.log(f));
         // TODO: Store in indexed database
-        files.value.push(...selectedFiles);
+        notebookStorage.files.value.push(...selectedFiles);
       } catch (err) {
         if (err.name !== "AbortError") {
           return console.error(err);
@@ -87,7 +102,7 @@ export default defineComponent({
       try {
         const selectedFolders = await directoryOpen();
         console.log(selectedFolders);
-        folders.value.push(...selectedFolders);
+        notebookStorage.folders.value.push(...selectedFolders);
       } catch (err) {
         if (err.name !== "AbortError") {
           return console.error(err);
@@ -98,7 +113,7 @@ export default defineComponent({
     async function saveFile() {
       try {
         // TODO: Actually save the file
-        await fileSave(new Blob(), {
+        await fileSave(new Blob(/* Notebook goes here */), {
           fileName: "name.nb",
           extensions: [".nb"],
         });
