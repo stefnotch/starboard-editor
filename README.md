@@ -1,6 +1,6 @@
 # starboard-editor
 
-Starboard Editor
+[Starboard Editor](https://stefnotch.github.io/starboard-editor/)
 
 ## Features (WIP)
 
