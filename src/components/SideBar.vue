@@ -115,11 +115,19 @@ export default defineComponent({
 
     async function saveFile() {
       try {
-        // TODO: Actually save the file
-        await fileSave(new Blob(/* Notebook goes here */), {
-          fileName: "name.nb",
-          extensions: [".nb"],
-        });
+        const notebookStorage = await notebookStoragePromise;
+        const notebook = notebookStorage.shownNotebook.value;
+        if (notebook) {
+          await fileSave(
+            new Blob([notebook.content], {
+              type: "text/plain",
+            }),
+            {
+              fileName: notebook.name,
+              extensions: [".nb"],
+            }
+          );
+        }
       } catch (err) {
         if (err.name !== "AbortError") {
           return console.error(err);

@@ -9,11 +9,17 @@ body,
   margin: 0;
   padding: 0;
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 nav .menu-burger {
   display: block;
   margin-left: initial;
+}
+
+.full-height {
+  height: 100%;
 }
 
 /** Fix bulma */

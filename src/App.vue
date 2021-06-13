@@ -23,7 +23,7 @@
       </div>
     </div>
   </nav>
-  <div class="columns is-gapless">
+  <div class="columns is-gapless full-height">
     <side-bar class="column is-one-fifth"></side-bar>
     <div ref="starboardWrapContainer" class="starboard-container column"></div>
     <div class="column is-one-fifth"></div>
@@ -119,20 +119,28 @@ export default defineComponent({
   },
 });
 </script>
+<style scoped>
+side-bar {
+  height: 100%;
+  overflow: auto;
+}
+</style>
 <style>
-starboard-embed {
+.starboard-container starboard-embed {
   display: block;
+  padding-right: 8px;
+  padding-left: 8px;
 }
 .starboard-container,
 starboard-embed,
 starboard-embed > iframe {
-  height: 100vh;
+  height: 100%;
   border: 0px;
   outline: 0px;
   padding: 0px;
   margin: 0px;
   box-sizing: border-box;
-  max-height: 100vh;
+  max-height: 100%;
   display: block;
 }
 </style>
