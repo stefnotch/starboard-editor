@@ -13,6 +13,7 @@
     <div class="navbar-item has-dropdown is-hoverable">
       <a class="navbar-link"> File </a>
       <div class="navbar-dropdown is-boxed">
+        <a class="navbar-item"> New File </a>
         <a class="navbar-item"> Open File </a>
         <a class="navbar-item"> Open Folder </a>
         <hr class="navbar-divider" />
@@ -23,7 +24,7 @@
     </div>
   </nav>
   <div class="columns is-gapless">
-    <side-bar class="column is-one-fifth" @showFile="showFile"></side-bar>
+    <side-bar class="column is-one-fifth"></side-bar>
     <div ref="starboardWrapContainer" class="starboard-container column"></div>
     <div class="column is-one-fifth"></div>
   </div>
@@ -35,6 +36,7 @@ import SideBar from "./components/SideBar.vue";
 import { StarboardEmbed } from "starboard-wrap";
 import { useURLParams } from "./useUrlParams";
 import { useCompression } from "./useCompression";
+import { useNotebookStorage } from "./useNotebookStorage";
 
 export default defineComponent({
   components: { SideBar },
@@ -78,9 +80,17 @@ export default defineComponent({
       );
     });
 
-    function showFile(file: { name: string; content: string }) {
-      // TODO: Load this file
-    }
+    useNotebookStorage().then((notebookStorage) => {
+      watch(
+        notebookStorage.shownNotebook,
+        (shownNotebook) => {
+          // TODO: Show this notebook
+        },
+        {
+          immediate: true,
+        }
+      );
+    });
 
     return {
       starboardWrapContainer,

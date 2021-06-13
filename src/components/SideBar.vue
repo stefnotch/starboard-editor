@@ -68,9 +68,6 @@ import { useNotebookStorage } from "../useNotebookStorage";
 
 export default defineComponent({
   components: {},
-  emits: {
-    showFile: (value: { name: string; content: string }) => true,
-  },
   setup(props, context) {
     if (!supported) {
       console.log(
@@ -78,19 +75,24 @@ export default defineComponent({
       );
     }
 
-    const notebookStorage = useNotebookStorage();
+    const notebookStoragePromise = useNotebookStorage().then((v) => v);
 
-    context.emit("showFile", { name: "cat", content: "lorem ipsum" });
-
+    // Open file --> added to file storage (which reads the text, notes it down in the indexeddb, ...)
+    // When the user hits "save" --> file saved (disk and indexeddb, file storage takes care of it)
     async function openFile() {
       try {
         const selectedFiles = await fileOpen({
           extensions: [".md", ".sb", ".nb"],
           multiple: true,
         });
-        selectedFiles.forEach((f) => console.log(f));
-        // TODO: Store in indexed database
-        notebookStorage.files.value.push(...selectedFiles);
+        const notebookStorage = await notebookStoragePromise;
+        const fileIds = await Promise.all(
+          selectedFiles.map((f) => notebookStorage.addFile(f))
+        );
+
+        if (fileIds.length > 0) {
+          await notebookStorage.showFile(fileIds[0]);
+        }
       } catch (err) {
         if (err.name !== "AbortError") {
           return console.error(err);
@@ -102,7 +104,7 @@ export default defineComponent({
       try {
         const selectedFolders = await directoryOpen();
         console.log(selectedFolders);
-        notebookStorage.folders.value.push(...selectedFolders);
+        // notebookStorage.folders.value.push(...selectedFolders);
       } catch (err) {
         if (err.name !== "AbortError") {
           return console.error(err);
