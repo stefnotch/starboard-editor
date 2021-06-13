@@ -57,34 +57,55 @@ export default defineComponent({
       );
     }
 
+    initialNotebookContent = initialNotebookContent.then(async (v) => {
+      if (v) {
+        return v;
+      } else {
+        // TODO: Load notebook from localstorage
+        return "";
+      }
+    });
+
     initialNotebookContent.then((notebookContent) => {
       watch(
         starboardWrapContainer,
         (value) => {
-          value?.appendChild(
-            new StarboardEmbed({
-              notebookContent,
-              preventNavigationWithUnsavedChanges: true,
-              onSaveMessage: (payload) => {
-                // Save notebook
-              },
-              onContentUpdateMessage: (payload) => {
-                // Keep a periodic localstorage backup
-              },
-              // TODO: If you replace the src with something, make sure that it's still hosted on a different domain!
-              // src:
-            })
-          );
+          showNotebook(notebookContent);
         },
         { immediate: true }
       );
     });
 
+    /**
+     * Shows a notebook and refreshes starboard
+     */
+    function showNotebook(notebookContent: string) {
+      const htmlElement = starboardWrapContainer.value;
+      if (!htmlElement) return;
+      htmlElement.innerHTML = "";
+      htmlElement.appendChild(
+        new StarboardEmbed({
+          notebookContent,
+          preventNavigationWithUnsavedChanges: true,
+          autoResize: false,
+          onSaveMessage: (payload) => {
+            // Save notebook
+          },
+          onContentUpdateMessage: (payload) => {
+            urlParams.setParam("notebook", "");
+            // Keep a periodic localstorage backup
+          },
+          // TODO: If you replace the src with something, make sure that it's still hosted on a different domain!
+          src: "https://unpkg.com/starboard-notebook@0.12.0/dist/index.html",
+        })
+      );
+    }
+
     useNotebookStorage().then((notebookStorage) => {
       watch(
         notebookStorage.shownNotebook,
-        (shownNotebook) => {
-          // TODO: Show this notebook
+        (notebook) => {
+          showNotebook(notebook?.content ?? "");
         },
         {
           immediate: true,
@@ -113,10 +134,5 @@ starboard-embed > iframe {
   box-sizing: border-box;
   max-height: 100vh;
   display: block;
-}
-
-nav .menu-burger {
-  display: block;
-  margin-left: initial;
 }
 </style>

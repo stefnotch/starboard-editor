@@ -86,12 +86,13 @@ export default defineComponent({
           multiple: true,
         });
         const notebookStorage = await notebookStoragePromise;
-        const fileIds = await Promise.all(
+        const fileIds = await Promise.allSettled(
           selectedFiles.map((f) => notebookStorage.addFile(f))
         );
 
-        if (fileIds.length > 0) {
-          await notebookStorage.showFile(fileIds[0]);
+        const fileId = fileIds.find((v) => v.status === "fulfilled");
+        if (fileId?.status === "fulfilled") {
+          await notebookStorage.showFile(fileId.value);
         }
       } catch (err) {
         if (err.name !== "AbortError") {

@@ -2,9 +2,13 @@ export function useURLParams() {
   function getParam(key: string) {
     return new URLSearchParams(window.location.search).get(key);
   }
-  function setParam(key: string, value: string) {
+  function setParam(key: string, value: string | undefined) {
     let urlParams = new URLSearchParams(window.location.search);
-    urlParams.set(key, value);
+    if (value) {
+      urlParams.set(key, value);
+    } else {
+      urlParams.delete(key);
+    }
     history.pushState(
       undefined,
       "",

@@ -22,17 +22,24 @@ interface DatabaseFile {
   fileHandle: FileWithHandle;
 }
 
-export async function useNotebookStorage() {
-  // TODO: Whenever the active file changes (opened/edited/deleted) --> we note down the latest state (overwriting the state every time) (slightly debounced) (maybe extra-executed in beforeunload)
-  const shownNotebook = shallowRef<NotebookFile>();
+// TODO: Whenever the active file changes (opened/edited/deleted) --> we note down the latest state (overwriting the state every time) (slightly debounced) (maybe extra-executed in beforeunload)
+const shownNotebook = shallowRef<NotebookFile>();
+const files = shallowRef<Map<string, DatabaseFile>>(
+  new Map<string, DatabaseFile>()
+);
+const folders = shallowRef<Map<string, FileWithDirectoryHandle>>(
+  new Map<string, FileWithDirectoryHandle>()
+);
+const initPromise = Promise.allSettled([
+  get<Map<string, DatabaseFile>>("notebook-files").then((v) => {
+    if (v) {
+      files.value = v;
+    }
+  }),
+]);
 
-  const files = shallowRef<Map<string, DatabaseFile>>(
-    (await get<Map<string, DatabaseFile>>("notebook-files")) ??
-      new Map<string, DatabaseFile>()
-  );
-  const folders = shallowRef<Map<string, FileWithDirectoryHandle>>(
-    new Map<string, FileWithDirectoryHandle>()
-  );
+export async function useNotebookStorage() {
+  await initPromise;
 
   async function addFile(file: FileWithHandle): Promise<string> {
     // TODO: Maybe deduplicate files with the same name?
