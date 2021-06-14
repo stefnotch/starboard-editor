@@ -458,7 +458,7 @@ function usePseudoBase64() {
   // https://stackoverflow.com/questions/695438/what-are-the-safe-characters-for-making-urls
   // https://unpkg.com/browse/@sunder/kit@0.1.5/encoding/base64.js
   const urlSafeCharacters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'-";
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-";
   const paddingChar = "_";
   const lookupTable = new Uint8Array(256); // 1 byte
   for (let i = 0; i < urlSafeCharacters.length; i++) {
