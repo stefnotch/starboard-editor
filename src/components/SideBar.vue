@@ -94,10 +94,14 @@ export default defineComponent({
         const fileId = fileIds.find((v) => v.status === "fulfilled");
         if (fileId?.status === "fulfilled") {
           await notebookStorage.showFile(fileId.value);
+        } else {
+          console.warn(fileIds);
         }
       } catch (err) {
         if (err.name !== "AbortError") {
           return console.error(err);
+        } else {
+          console.warn(err);
         }
       }
     }

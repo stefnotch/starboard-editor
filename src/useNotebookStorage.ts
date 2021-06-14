@@ -13,6 +13,7 @@ import {
   ref,
   shallowReactive,
   shallowRef,
+  toRaw,
   watch,
 } from "vue";
 import { v4 as uuidv4 } from "uuid";
@@ -54,19 +55,23 @@ const initPromise = Promise.allSettled([
 
 export function useNotebookStorage() {
   async function addFile(file: FileWithHandle): Promise<string> {
-    await initPromise;
+    try {
+      await initPromise;
 
-    // TODO: Maybe deduplicate files with the same name?
-    const id = uuidv4();
-    files.set(id, {
-      id,
-      name: file.name,
-      fileHandle: file,
-    });
+      // TODO: Maybe deduplicate file handles?
+      const id = uuidv4();
+      files.set(id, {
+        id,
+        name: file.name,
+        fileHandle: file,
+      });
 
-    await set("notebook-files", files);
+      await set("notebook-files", toRaw(files));
 
-    return id;
+      return id;
+    } catch (e) {
+      console.warn(e);
+    }
   }
 
   async function showFile(id: string) {
