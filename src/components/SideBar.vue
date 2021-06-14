@@ -13,9 +13,9 @@
             Save File
           </button>
         </li>
-        <!-- TODO: Get shareable url -->
+        <!-- TODO: Set sharing options (compression, show if succeeded, ...) -->
         <li>
-          <button class="button is-small is-fullwidth" @click="saveFile">
+          <button class="button is-small is-fullwidth" @click="shareNotebook">
             Share Notebook
           </button>
         </li>
@@ -67,6 +67,9 @@ import {
   FileWithDirectoryHandle,
 } from "browser-fs-access";
 import { useNotebookStorage } from "../useNotebookStorage";
+import { useCompression } from "../useCompression";
+
+type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T;
 
 export default defineComponent({
   components: {},
@@ -78,6 +81,9 @@ export default defineComponent({
     }
 
     const notebookStorage = useNotebookStorage();
+
+    // TODO: Lazy loader function
+    let compression: null | Awaited<ReturnType<typeof useCompression>> = null;
 
     // Open file --> added to file storage (which reads the text, notes it down in the indexeddb, ...)
     // When the user hits "save" --> file saved (disk and indexeddb, file storage takes care of it)
@@ -143,12 +149,46 @@ export default defineComponent({
       return notebookStorage.showFile(id);
     }
 
+    async function shareNotebook() {
+      const notebook = notebookStorage.shownNotebook.value;
+      if (compression === null) {
+        compression = await useCompression();
+      }
+
+      if (notebook) {
+        const compressedNotebook = compression.compressForUrl(notebook.content);
+
+        let urlParams = new URLSearchParams(window.location.search);
+        urlParams.set("notebook", compressedNotebook);
+        urlParams.set("c", "true");
+
+        const fullUrl =
+          location.protocol +
+          "//" +
+          location.host +
+          location.pathname +
+          "?" +
+          urlParams +
+          location.hash;
+
+        navigator.clipboard.writeText(fullUrl).then(
+          function () {
+            /* TODO: clipboard successfully set */
+          },
+          function () {
+            /* TODO: clipboard write failed */
+          }
+        );
+      }
+    }
+
     return {
       openFile,
       saveFile,
       openFolder,
       files: notebookStorage.files,
       showFile,
+      shareNotebook,
     };
   },
 });

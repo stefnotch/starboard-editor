@@ -55,23 +55,19 @@ const initPromise = Promise.allSettled([
 
 export function useNotebookStorage() {
   async function addFile(file: FileWithHandle): Promise<string> {
-    try {
-      await initPromise;
+    await initPromise;
 
-      // TODO: Maybe deduplicate file handles?
-      const id = uuidv4();
-      files.set(id, {
-        id,
-        name: file.name,
-        fileHandle: file,
-      });
+    // TODO: Maybe deduplicate file handles?
+    const id = uuidv4();
+    files.set(id, {
+      id,
+      name: file.name,
+      fileHandle: file,
+    });
 
-      await set("notebook-files", toRaw(files));
+    await set("notebook-files", toRaw(files));
 
-      return id;
-    } catch (e) {
-      console.warn(e);
-    }
+    return id;
   }
 
   async function showFile(id: string) {
