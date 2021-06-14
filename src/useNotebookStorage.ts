@@ -175,5 +175,13 @@ export function useNotebookStorage() {
         };
       })
     ),
+    folders: computed(() =>
+      Array.from(folders.values()).map((v) => {
+        return {
+          id: v.id,
+          name: v.folderHandle.name,
+        };
+      })
+    ),
   };
 }

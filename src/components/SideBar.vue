@@ -19,11 +19,6 @@
             Share Notebook
           </button>
         </li>
-        <li>
-          <button class="button is-small is-fullwidth" @click="openFolder">
-            Open Directory
-          </button>
-        </li>
       </ul>
       <p class="menu-label">Files</p>
       <ul class="menu-list">
@@ -39,10 +34,11 @@
           </ul>
         </li>-->
       </ul>
-      <p class="menu-label">Directories</p>
+      <p class="menu-label">Folders</p>
       <ul class="menu-list">
-        <li><a>culpa, ipsam temporibus</a></li>
-        <li><a>soluta dicta</a></li>
+        <li v-for="folder in folders" :key="folder.id">
+          <a>{{ folder.name }}</a>
+        </li>
       </ul>
     </aside>
   </div>
@@ -114,12 +110,20 @@ export default defineComponent({
 
     async function openFolder() {
       try {
-        const selectedFolders = await directoryOpen();
+        // Nope, won't do. So, basically, the library returns a list of files *because* of compatibility with old browsers
+        // I wish it would just return a directory handle, but no such luck
+        const selectedFolders = await directoryOpen({
+          recursive: true,
+        });
         console.log(selectedFolders);
-        // notebookStorage.folders.value.push(...selectedFolders);
+        await Promise.allSettled(
+          selectedFolders.map((f) => notebookStorage.addFolder(f))
+        );
       } catch (err) {
         if (err.name !== "AbortError") {
           return console.error(err);
+        } else {
+          console.warn(err);
         }
       }
     }
@@ -181,6 +185,7 @@ export default defineComponent({
       saveFile,
       openFolder,
       files: notebookStorage.files,
+      folders: notebookStorage.folders,
       showFile,
       shareNotebook,
     };
