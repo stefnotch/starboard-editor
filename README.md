@@ -5,7 +5,7 @@
 ## Features (WIP)
 
 - Dragging and dropping notebooks
-- Local filesystem access (<https://web.dev/file-system-access/> with fallbacks)
+- Local filesystem access
 - Import/export as markdown
 - Edit source code mode
 - Localstorage backups
