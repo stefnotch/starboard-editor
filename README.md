@@ -12,3 +12,4 @@
 - Encode it in the URL compressed
 - Offline support
 - Dark mode
+- Add common plugins
