@@ -137,6 +137,9 @@ export default defineComponent({
               extensions: [".nb"],
             }
           );
+
+          // TODO:
+          // notebookStorage.save
         }
       } catch (err) {
         if (err.name !== "AbortError") {
@@ -161,6 +164,7 @@ export default defineComponent({
         let urlParams = new URLSearchParams(window.location.search);
         urlParams.set("notebook", compressedNotebook);
         urlParams.set("c", "true");
+        urlParams.set("name", notebook.name);
 
         const fullUrl =
           location.protocol +
@@ -168,7 +172,7 @@ export default defineComponent({
           location.host +
           location.pathname +
           "?" +
-          urlParams +
+          urlParams + // TODO: Support fancy characters as well (like chinese characters)
           location.hash;
 
         navigator.clipboard.writeText(fullUrl).then(

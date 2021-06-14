@@ -30,6 +30,8 @@ interface DatabaseFile {
   fileHandle: FileWithHandle;
 }
 
+// TODO: Schema version
+
 // TODO: Whenever the active file changes (opened/edited/deleted) --> we note down the latest state (overwriting the state every time) (slightly debounced) (maybe extra-executed in beforeunload)
 const shownNotebook = shallowRef<NotebookFile>();
 const files = shallowReactive<Map<string, DatabaseFile>>(

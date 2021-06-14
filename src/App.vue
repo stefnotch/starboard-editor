@@ -69,7 +69,7 @@ export default defineComponent({
     const notebookStorage = useNotebookStorage();
     initialNotebookContent.then((v) => {
       notebookStorage.shownNotebook.value = {
-        name: "Untitled",
+        name: urlParams.getParam("name") ?? "Untitled",
         content: v,
       };
     });
@@ -89,11 +89,13 @@ export default defineComponent({
           preventNavigationWithUnsavedChanges: true,
           autoResize: false,
           onSaveMessage: (payload) => {
-            // Save notebook
+            // TODO: Save notebook
           },
           onContentUpdateMessage: (payload) => {
-            urlParams.setParam("notebook", "");
-            // Keep a periodic localstorage backup
+            urlParams.setParam("notebook", undefined);
+            urlParams.setParam("c", undefined);
+            urlParams.setParam("name", undefined);
+            // TODO: Keep a periodic localstorage backup
           },
           // TODO: If you replace the src with something, make sure that it's still hosted on a different domain!
           src: "https://unpkg.com/starboard-notebook@0.12.0/dist/index.html",
