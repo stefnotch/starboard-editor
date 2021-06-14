@@ -1,8 +1,7 @@
 html,
 body,
 #app {
-  --font: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans",
-    Arial, sans-serif;
+  --font: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
   overflow: initial;
   font-family: var(--font);
   font-size: 16px;
@@ -54,15 +53,9 @@ nav .menu-burger {
     background-color: transparent !important;
   }
   .navbar.is-transparent .navbar-item.has-dropdown.is-active .navbar-link,
-  .navbar.is-transparent
-    .navbar-item.has-dropdown.is-hoverable:focus
-    .navbar-link,
-  .navbar.is-transparent
-    .navbar-item.has-dropdown.is-hoverable:focus-within
-    .navbar-link,
-  .navbar.is-transparent
-    .navbar-item.has-dropdown.is-hoverable:hover
-    .navbar-link {
+  .navbar.is-transparent .navbar-item.has-dropdown.is-hoverable:focus .navbar-link,
+  .navbar.is-transparent .navbar-item.has-dropdown.is-hoverable:focus-within .navbar-link,
+  .navbar.is-transparent .navbar-item.has-dropdown.is-hoverable:hover .navbar-link {
     background-color: transparent !important;
   }
   .navbar.is-transparent .navbar-dropdown a.navbar-item:focus,
