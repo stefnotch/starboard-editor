@@ -13,3 +13,4 @@
 - Offline support
 - Dark mode
 - Add common plugins
+- Sympy support
