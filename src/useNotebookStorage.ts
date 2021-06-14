@@ -7,7 +7,15 @@ import {
   FileWithDirectoryHandle,
 } from "browser-fs-access";
 import { get, set } from "idb-keyval";
-import { computed, readonly, ref, shallowReactive, shallowRef, toRaw, watch } from "vue";
+import {
+  computed,
+  readonly,
+  ref,
+  shallowReactive,
+  shallowRef,
+  toRaw,
+  watch,
+} from "vue";
 import { v4 as uuidv4 } from "uuid";
 
 export interface NotebookFile {
@@ -31,8 +39,12 @@ interface DatabaseFolder {
 
 // TODO: Whenever the active file changes (opened/edited/deleted) --> we note down the latest state (overwriting the state every time) (slightly debounced) (maybe extra-executed in beforeunload)
 const shownNotebook = shallowRef<NotebookFile>();
-const files = shallowReactive<Map<string, DatabaseFile>>(new Map<string, DatabaseFile>());
-const folders = shallowReactive<Map<string, DatabaseFolder>>(new Map<string, DatabaseFolder>());
+const files = shallowReactive<Map<string, DatabaseFile>>(
+  new Map<string, DatabaseFile>()
+);
+const folders = shallowReactive<Map<string, DatabaseFolder>>(
+  new Map<string, DatabaseFolder>()
+);
 const isLoaded = ref(false);
 
 const initPromise = Promise.allSettled([
@@ -62,7 +74,10 @@ export function useNotebookStorage() {
     // Deduplicate file handles
     if (file.handle) {
       for (const existingFile of files.values()) {
-        if (existingFile.fileHandle.handle && file.handle.isSameEntry(existingFile.fileHandle.handle)) {
+        if (
+          existingFile.fileHandle.handle &&
+          file.handle.isSameEntry(existingFile.fileHandle.handle)
+        ) {
           return existingFile.id;
         }
       }
@@ -88,7 +103,9 @@ export function useNotebookStorage() {
       for (const existingFolder of folders.values()) {
         if (
           existingFolder.folderHandle.directoryHandle &&
-          folder.directoryHandle.isSameEntry(existingFolder.folderHandle.directoryHandle)
+          folder.directoryHandle.isSameEntry(
+            existingFolder.folderHandle.directoryHandle
+          )
         ) {
           return existingFolder.id;
         }

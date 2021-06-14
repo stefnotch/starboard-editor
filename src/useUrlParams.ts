@@ -12,7 +12,13 @@ export function useURLParams() {
     history.pushState(
       undefined,
       "",
-      location.protocol + "//" + location.host + location.pathname + "?" + urlParams + location.hash
+      location.protocol +
+        "//" +
+        location.host +
+        location.pathname +
+        "?" +
+        urlParams +
+        location.hash
     );
   }
   return {

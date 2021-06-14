@@ -239,7 +239,10 @@ export async function useCompression() {
 
   let cachegetUint8Memory0: Uint8Array | null = null;
   function getUint8Memory0() {
-    if (cachegetUint8Memory0 === null || cachegetUint8Memory0.buffer !== wasm.memory.buffer) {
+    if (
+      cachegetUint8Memory0 === null ||
+      cachegetUint8Memory0.buffer !== wasm.memory.buffer
+    ) {
       cachegetUint8Memory0 = new Uint8Array(wasm.memory.buffer);
     }
     return cachegetUint8Memory0;
@@ -291,7 +294,10 @@ export async function useCompression() {
 
   let cachegetInt32Memory0 = null;
   function getInt32Memory0() {
-    if (cachegetInt32Memory0 === null || cachegetInt32Memory0.buffer !== wasm.memory.buffer) {
+    if (
+      cachegetInt32Memory0 === null ||
+      cachegetInt32Memory0.buffer !== wasm.memory.buffer
+    ) {
       cachegetInt32Memory0 = new Int32Array(wasm.memory.buffer);
     }
     return cachegetInt32Memory0;
@@ -388,7 +394,11 @@ export async function useCompression() {
 
   function __wbg_stack_558ba5917b466edd(arg0, arg1) {
     var ret = getObject(arg1).stack;
-    var ptr0 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    var ptr0 = passStringToWasm0(
+      ret,
+      wasm.__wbindgen_malloc,
+      wasm.__wbindgen_realloc
+    );
     var len0 = WASM_VECTOR_LEN;
     getInt32Memory0()[arg0 / 4 + 1] = len0;
     getInt32Memory0()[arg0 / 4 + 0] = ptr0;
@@ -447,7 +457,8 @@ function usePseudoBase64() {
   // Sorta like base64, but not quite
   // https://stackoverflow.com/questions/695438/what-are-the-safe-characters-for-making-urls
   // https://unpkg.com/browse/@sunder/kit@0.1.5/encoding/base64.js
-  const urlSafeCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-";
+  const urlSafeCharacters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-";
   const paddingChar = "_";
   const lookupTable = new Uint8Array(256); // 1 byte
   for (let i = 0; i < urlSafeCharacters.length; i++) {
@@ -487,7 +498,12 @@ function usePseudoBase64() {
       const encoded2 = lookupTable[value.charCodeAt(i + 1)];
       const encoded3 = lookupTable[value.charCodeAt(i + 2)];
       const encoded4 = lookupTable[value.charCodeAt(i + 3)];
-      if (encoded1 === undefined || encoded2 === undefined || encoded3 === undefined || encoded4 === undefined) {
+      if (
+        encoded1 === undefined ||
+        encoded2 === undefined ||
+        encoded3 === undefined ||
+        encoded4 === undefined
+      ) {
         throw new Error("Non-base64 character");
       }
       bytes[p++] = (encoded1 << 2) | (encoded2 >> 4);
