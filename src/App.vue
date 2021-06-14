@@ -15,7 +15,6 @@
       <div class="navbar-dropdown is-boxed">
         <a class="navbar-item"> New File </a>
         <a class="navbar-item"> Open File </a>
-        <a class="navbar-item"> Open Folder </a>
         <hr class="navbar-divider" />
         <a class="navbar-item"> Save </a>
         <a class="navbar-item"> Share </a>

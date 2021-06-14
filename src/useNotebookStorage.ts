@@ -30,20 +30,12 @@ interface DatabaseFile {
   fileHandle: FileWithHandle;
 }
 
-interface DatabaseFolder {
-  id: string;
-  folderHandle: FileWithDirectoryHandle;
-}
-
 // TODO: Schema version
 
 // TODO: Whenever the active file changes (opened/edited/deleted) --> we note down the latest state (overwriting the state every time) (slightly debounced) (maybe extra-executed in beforeunload)
 const shownNotebook = shallowRef<NotebookFile>();
 const files = shallowReactive<Map<string, DatabaseFile>>(
   new Map<string, DatabaseFile>()
-);
-const folders = shallowReactive<Map<string, DatabaseFolder>>(
-  new Map<string, DatabaseFolder>()
 );
 const isLoaded = ref(false);
 
@@ -52,13 +44,6 @@ const initPromise = Promise.allSettled([
     if (v) {
       for (const entry of v.entries()) {
         files.set(entry[0], entry[1]);
-      }
-    }
-  }),
-  get<Map<string, DatabaseFolder>>("notebook-folders").then((v) => {
-    if (v) {
-      for (const entry of v.entries()) {
-        folders.set(entry[0], entry[1]);
       }
     }
   }),
@@ -91,34 +76,6 @@ export function useNotebookStorage() {
     });
 
     await set("notebook-files", toRaw(files));
-
-    return id;
-  }
-
-  async function addFolder(folder: FileWithDirectoryHandle): Promise<string> {
-    await initPromise;
-
-    // Deduplicate folder handles
-    if (folder.directoryHandle) {
-      for (const existingFolder of folders.values()) {
-        if (
-          existingFolder.folderHandle.directoryHandle &&
-          folder.directoryHandle.isSameEntry(
-            existingFolder.folderHandle.directoryHandle
-          )
-        ) {
-          return existingFolder.id;
-        }
-      }
-    }
-
-    const id = uuidv4();
-    folders.set(id, {
-      id,
-      folderHandle: folder,
-    });
-
-    await set("notebook-folders", toRaw(folders));
 
     return id;
   }
@@ -163,7 +120,6 @@ export function useNotebookStorage() {
   return {
     isLoaded,
     addFile,
-    addFolder,
     showFile,
     saveFile,
     shownNotebook,
@@ -172,14 +128,6 @@ export function useNotebookStorage() {
         return {
           id: v.id,
           name: v.name,
-        };
-      })
-    ),
-    folders: computed(() =>
-      Array.from(folders.values()).map((v) => {
-        return {
-          id: v.id,
-          name: v.folderHandle.name,
         };
       })
     ),
