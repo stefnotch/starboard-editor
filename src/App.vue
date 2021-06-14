@@ -74,6 +74,8 @@ export default defineComponent({
       };
     });
 
+    // TODO: Pyodide kernel, sympy support and then make waves about it (sympy community, reddit, hackernews, ..)
+
     /**
      * Shows a notebook and refreshes starboard
      */
@@ -83,6 +85,8 @@ export default defineComponent({
     ) {
       if (!container) return;
       container.innerHTML = "";
+      // TODO: runtimeConfig for scroll past end
+      // TODO: runtimeConfig for dark theme
       container.appendChild(
         new StarboardEmbed({
           notebookContent,

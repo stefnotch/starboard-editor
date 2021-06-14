@@ -4,25 +4,17 @@
       <p class="menu-label">General</p>
       <ul class="menu-list">
         <li>
-          <button class="button is-small is-fullwidth" @click="openFile">
-            Open File
-          </button>
+          <button class="button is-small is-fullwidth" @click="openFile">Open File</button>
         </li>
         <li>
-          <button class="button is-small is-fullwidth" @click="saveFile">
-            Save File
-          </button>
+          <button class="button is-small is-fullwidth" @click="saveFile">Save File</button>
         </li>
         <!-- TODO: Set sharing options (compression, show if succeeded, ...) -->
         <li>
-          <button class="button is-small is-fullwidth" @click="shareNotebook">
-            Share Notebook
-          </button>
+          <button class="button is-small is-fullwidth" @click="shareNotebook">Share Notebook</button>
         </li>
         <li>
-          <button class="button is-small is-fullwidth" @click="openFolder">
-            Open Directory
-          </button>
+          <button class="button is-small is-fullwidth" @click="openFolder">Open Directory</button>
         </li>
       </ul>
       <p class="menu-label">Files</p>
@@ -49,15 +41,7 @@
 </template>
 
 <script lang="ts">
-import {
-  ref,
-  defineComponent,
-  watchEffect,
-  watch,
-  computed,
-  shallowRef,
-  shallowReactive,
-} from "vue";
+import { ref, defineComponent, watchEffect, watch, computed, shallowRef, shallowReactive } from "vue";
 import {
   fileOpen,
   directoryOpen,
@@ -75,9 +59,7 @@ export default defineComponent({
   components: {},
   setup(props, context) {
     if (!supported) {
-      console.log(
-        "Native Filesystem API not supported, please nicely ask your local browser vendor"
-      );
+      console.log("Native Filesystem API not supported, please nicely ask your local browser vendor");
     }
 
     const notebookStorage = useNotebookStorage();
@@ -93,9 +75,7 @@ export default defineComponent({
           extensions: [".md", ".sb", ".nb"],
           multiple: true,
         });
-        const fileIds = await Promise.allSettled(
-          selectedFiles.map((f) => notebookStorage.addFile(f))
-        );
+        const fileIds = await Promise.allSettled(selectedFiles.map((f) => notebookStorage.addFile(f)));
 
         const fileId = fileIds.find((v) => v.status === "fulfilled");
         if (fileId?.status === "fulfilled") {
@@ -127,19 +107,9 @@ export default defineComponent({
     async function saveFile() {
       try {
         const notebook = notebookStorage.shownNotebook.value;
-        if (notebook) {
-          await fileSave(
-            new Blob([notebook.content], {
-              type: "text/plain",
-            }),
-            {
-              fileName: notebook.name,
-              extensions: [".nb"],
-            }
-          );
 
-          // TODO:
-          // notebookStorage.save
+        if (notebook) {
+          notebookStorage.saveFile(notebook);
         }
       } catch (err) {
         if (err.name !== "AbortError") {
