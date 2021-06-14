@@ -7,11 +7,18 @@ import {
   FileWithDirectoryHandle,
 } from "browser-fs-access";
 import { get, set } from "idb-keyval";
-import { computed, readonly, shallowRef, watch } from "vue";
+import {
+  computed,
+  readonly,
+  ref,
+  shallowReactive,
+  shallowRef,
+  watch,
+} from "vue";
 import { v4 as uuidv4 } from "uuid";
 
 export interface NotebookFile {
-  id: string;
+  id?: string;
   name: string;
   content: string;
 }
@@ -24,39 +31,48 @@ interface DatabaseFile {
 
 // TODO: Whenever the active file changes (opened/edited/deleted) --> we note down the latest state (overwriting the state every time) (slightly debounced) (maybe extra-executed in beforeunload)
 const shownNotebook = shallowRef<NotebookFile>();
-const files = shallowRef<Map<string, DatabaseFile>>(
+const files = shallowReactive<Map<string, DatabaseFile>>(
   new Map<string, DatabaseFile>()
 );
-const folders = shallowRef<Map<string, FileWithDirectoryHandle>>(
+const folders = shallowReactive<Map<string, FileWithDirectoryHandle>>(
   new Map<string, FileWithDirectoryHandle>()
 );
+const isLoaded = ref(false);
+
 const initPromise = Promise.allSettled([
   get<Map<string, DatabaseFile>>("notebook-files").then((v) => {
     if (v) {
-      files.value = v;
+      for (const entry of v.entries()) {
+        files.set(entry[0], entry[1]);
+      }
     }
   }),
-]);
+]).then((v) => {
+  isLoaded.value = true;
+  return v;
+});
 
-export async function useNotebookStorage() {
-  await initPromise;
-
+export function useNotebookStorage() {
   async function addFile(file: FileWithHandle): Promise<string> {
+    await initPromise;
+
     // TODO: Maybe deduplicate files with the same name?
     const id = uuidv4();
-    files.value.set(id, {
+    files.set(id, {
       id,
       name: file.name,
       fileHandle: file,
     });
 
-    await set("notebook-files", files.value);
+    await set("notebook-files", files);
 
     return id;
   }
 
   async function showFile(id: string) {
-    const databaseFile = files.value.get(id);
+    await initPromise;
+
+    const databaseFile = files.get(id);
     if (!databaseFile) return;
 
     const shownFile: NotebookFile = {
@@ -69,8 +85,17 @@ export async function useNotebookStorage() {
   }
 
   return {
+    isLoaded,
     addFile,
     showFile,
     shownNotebook,
+    files: computed(() =>
+      Array.from(files.values()).map((v) => {
+        return {
+          id: v.id,
+          name: v.name,
+        };
+      })
+    ),
   };
 }

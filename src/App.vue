@@ -66,24 +66,24 @@ export default defineComponent({
       }
     });
 
-    initialNotebookContent.then((notebookContent) => {
-      watch(
-        starboardWrapContainer,
-        (value) => {
-          showNotebook(notebookContent);
-        },
-        { immediate: true }
-      );
+    const notebookStorage = useNotebookStorage();
+    initialNotebookContent.then((v) => {
+      notebookStorage.shownNotebook.value = {
+        name: "Untitled",
+        content: v,
+      };
     });
 
     /**
      * Shows a notebook and refreshes starboard
      */
-    function showNotebook(notebookContent: string) {
-      const htmlElement = starboardWrapContainer.value;
-      if (!htmlElement) return;
-      htmlElement.innerHTML = "";
-      htmlElement.appendChild(
+    function showNotebook(
+      container: HTMLElement | undefined,
+      notebookContent: string
+    ) {
+      if (!container) return;
+      container.innerHTML = "";
+      container.appendChild(
         new StarboardEmbed({
           notebookContent,
           preventNavigationWithUnsavedChanges: true,
@@ -101,17 +101,15 @@ export default defineComponent({
       );
     }
 
-    useNotebookStorage().then((notebookStorage) => {
-      watch(
-        notebookStorage.shownNotebook,
-        (notebook) => {
-          showNotebook(notebook?.content ?? "");
-        },
-        {
-          immediate: true,
-        }
-      );
-    });
+    watch(
+      [starboardWrapContainer, notebookStorage.shownNotebook],
+      ([container, notebook]) => {
+        showNotebook(container, notebook?.content ?? "");
+      },
+      {
+        immediate: true,
+      }
+    );
 
     return {
       starboardWrapContainer,

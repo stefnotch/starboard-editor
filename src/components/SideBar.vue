@@ -27,16 +27,17 @@
       </ul>
       <p class="menu-label">Files</p>
       <ul class="menu-list">
-        <li><a>Lorem ipsum</a></li>
-        <li>
+        <li v-for="file in files" :key="file.id">
+          <!-- TODO: Remove button -->
+          <a @click="showFile(file.id)">{{ file.name }}</a>
+        </li>
+        <!--<li>
           <a class="is-active">dolor sit amet</a>
           <ul>
             <li><a>consectetur</a></li>
             <li><a>adipisicing elit.</a></li>
           </ul>
-        </li>
-        <li><a>Consequuntur</a></li>
-        <li><a>excepturi</a></li>
+        </li>-->
       </ul>
       <p class="menu-label">Directories</p>
       <ul class="menu-list">
@@ -55,6 +56,7 @@ import {
   watch,
   computed,
   shallowRef,
+  shallowReactive,
 } from "vue";
 import {
   fileOpen,
@@ -75,7 +77,7 @@ export default defineComponent({
       );
     }
 
-    const notebookStoragePromise = useNotebookStorage().then((v) => v);
+    const notebookStorage = useNotebookStorage();
 
     // Open file --> added to file storage (which reads the text, notes it down in the indexeddb, ...)
     // When the user hits "save" --> file saved (disk and indexeddb, file storage takes care of it)
@@ -85,7 +87,6 @@ export default defineComponent({
           extensions: [".md", ".sb", ".nb"],
           multiple: true,
         });
-        const notebookStorage = await notebookStoragePromise;
         const fileIds = await Promise.allSettled(
           selectedFiles.map((f) => notebookStorage.addFile(f))
         );
@@ -115,7 +116,6 @@ export default defineComponent({
 
     async function saveFile() {
       try {
-        const notebookStorage = await notebookStoragePromise;
         const notebook = notebookStorage.shownNotebook.value;
         if (notebook) {
           await fileSave(
@@ -135,7 +135,17 @@ export default defineComponent({
       }
     }
 
-    return { openFile, saveFile, openFolder };
+    function showFile(id: string) {
+      return notebookStorage.showFile(id);
+    }
+
+    return {
+      openFile,
+      saveFile,
+      openFolder,
+      files: notebookStorage.files,
+      showFile,
+    };
   },
 });
 </script>
