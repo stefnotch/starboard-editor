@@ -107,7 +107,8 @@ export default defineComponent({
         const notebook = notebookStorage.shownNotebook.value;
 
         if (notebook) {
-          notebookStorage.saveFile(notebook);
+          notebookStorage.hasUnsavedChanges.value = false;
+          await notebookStorage.saveFile(notebook);
         }
       } catch (err) {
         if (err.name !== "AbortError") {

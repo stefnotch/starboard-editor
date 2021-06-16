@@ -37,6 +37,16 @@ import { useURLParams } from "./useUrlParams";
 import { useCompression } from "./useCompression";
 import { useNotebookStorage } from "./useNotebookStorage";
 
+let waitBeforeUnload = false;
+function beforeUnloadCallback(e: BeforeUnloadEvent) {
+  if (waitBeforeUnload) {
+    e.preventDefault();
+    e.returnValue = "Unsaved Changes";
+  }
+}
+
+window.addEventListener("beforeunload", beforeUnloadCallback);
+
 export default defineComponent({
   components: { SideBar },
   setup() {
@@ -73,6 +83,10 @@ export default defineComponent({
       };
     });
 
+    watchEffect(
+      () => (waitBeforeUnload = notebookStorage.hasUnsavedChanges.value)
+    );
+
     // TODO: Pyodide kernel, sympy support and then make waves about it (sympy community, reddit, hackernews, ..)
 
     /**
@@ -89,16 +103,25 @@ export default defineComponent({
       container.appendChild(
         new StarboardEmbed({
           notebookContent,
-          preventNavigationWithUnsavedChanges: true,
           autoResize: false,
           onSaveMessage: (payload) => {
-            // TODO: Save notebook
+            if (notebookStorage.shownNotebook.value && payload.content) {
+              notebookStorage.shownNotebook.value.content = payload.content;
+            }
+            if (notebookStorage.shownNotebook.value) {
+              notebookStorage.hasUnsavedChanges.value = false;
+              notebookStorage.saveFile(notebookStorage.shownNotebook.value);
+            }
           },
           onContentUpdateMessage: (payload) => {
+            notebookStorage.hasUnsavedChanges.value = true;
             urlParams.setParam("notebook", undefined);
             urlParams.setParam("c", undefined);
             urlParams.setParam("name", undefined);
             // TODO: Keep a periodic localstorage backup
+            if (notebookStorage.shownNotebook.value && payload.content) {
+              notebookStorage.shownNotebook.value.content = payload.content;
+            }
           },
           // TODO: If you replace the src with something, make sure that it's still hosted on a different domain!
           src: "https://unpkg.com/starboard-notebook@0.12.0/dist/index.html",
@@ -115,6 +138,8 @@ export default defineComponent({
         immediate: true,
       }
     );
+
+    // TODO: Global save event listener
 
     return {
       starboardWrapContainer,

@@ -38,6 +38,7 @@ const files = shallowReactive<Map<string, DatabaseFile>>(
   new Map<string, DatabaseFile>()
 );
 const isLoaded = ref(false);
+const hasUnsavedChanges = ref(false);
 
 const initPromise = Promise.allSettled([
   get<Map<string, DatabaseFile>>("notebook-files").then((v) => {
@@ -100,18 +101,18 @@ export function useNotebookStorage() {
 
     // Doesn't rename the databaseFile, so you can safely save a notebook with a custom name
 
+    const hasExtension = /\.nb|\.sb/.test(file.name);
+
     await fileSave(
       new Blob([file.content], {
         type: "text/plain",
       }),
       {
-        fileName: file.name,
-        extensions: [".nb"],
+        fileName: hasExtension ? file.name : file.name + ".sb",
+        extensions: [".sb", ".nb"],
       },
       databaseFile?.fileHandle?.handle
     );
-
-    databaseFile?.fileHandle;
   }
 
   // TODO: Rename function
@@ -131,5 +132,6 @@ export function useNotebookStorage() {
         };
       })
     ),
+    hasUnsavedChanges,
   };
 }
