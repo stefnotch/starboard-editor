@@ -16,11 +16,13 @@
       <a class="navbar-link"> File </a>
       <div class="navbar-dropdown is-boxed">
         <!-- TODO: Hook those buttons up -->
-        <a class="navbar-item"> New File </a>
+        <a class="navbar-item" @click="newFile()"> New File </a>
         <a class="navbar-item"> Open File </a>
         <hr class="navbar-divider" />
         <a class="navbar-item"> Save </a>
         <a class="navbar-item"> Share </a>
+        <hr class="navbar-divider" />
+        <a class="navbar-item"> Export Markdown </a>
         <!-- TODO: Import/export Markdown -->
       </div>
     </div>
@@ -39,12 +41,14 @@
 </template>
 
 <script lang="ts">
-import { ref, defineComponent, watchEffect, watch, computed } from "vue";
+import { ref, defineComponent, watchEffect, watch, computed, toRaw } from "vue";
 import SideBar from "./components/SideBar.vue";
 import { StarboardEmbed } from "starboard-wrap";
 import { useURLParams } from "./useUrlParams";
 import { useCompression } from "./useCompression";
-import { useNotebookStorage } from "./useNotebookStorage";
+import { NotebookFile, useNotebookStorage } from "./useNotebookStorage";
+import { get, set } from "idb-keyval";
+import { debounce, throttle } from "@github/mini-throttle";
 
 let waitBeforeUnload = false;
 function beforeUnloadCallback(e: BeforeUnloadEvent) {
@@ -56,26 +60,30 @@ function beforeUnloadCallback(e: BeforeUnloadEvent) {
 
 window.addEventListener("beforeunload", beforeUnloadCallback);
 
-async function getInitialNotebookContent(
-  urlParams: ReturnType<typeof useURLParams>
-) {
+async function getInitialNotebook(urlParams: ReturnType<typeof useURLParams>) {
   const urlsCompressed = urlParams.getParam("c");
-  let content = "";
+  let notebook: NotebookFile = {
+    name: urlParams.getParam("name") ?? "Untitled",
+    content: "",
+  };
   if (urlsCompressed) {
     const compression = await useCompression();
-    content = compression.decompressFromUrl(
+    notebook.content = compression.decompressFromUrl(
       urlParams.getParam("notebook") ?? ""
     );
   } else {
-    content = urlParams.getParam("notebook") ?? "";
+    notebook.content = urlParams.getParam("notebook") ?? "";
   }
 
-  if (!content) {
-    // TODO: Load notebook from localstorage
-    content = "";
+  if (!notebook.content) {
+    const lastNotebook = await get<NotebookFile>("last-notebook");
+    if (lastNotebook && lastNotebook.name && lastNotebook.content) {
+      notebook.name = lastNotebook.name + "";
+      notebook.content = lastNotebook.content + "";
+    }
   }
 
-  return content;
+  return notebook;
 }
 
 export default defineComponent({
@@ -86,14 +94,11 @@ export default defineComponent({
     const showSidebar = ref(true);
 
     const urlParams = useURLParams();
-    let initialNotebookContent = getInitialNotebookContent(urlParams);
-
+    let initialNotebook = getInitialNotebook(urlParams);
     const notebookStorage = useNotebookStorage();
-    initialNotebookContent.then((v) => {
-      notebookStorage.shownNotebook.value = {
-        name: urlParams.getParam("name") ?? "Untitled",
-        content: v,
-      };
+
+    initialNotebook.then((v) => {
+      notebookStorage.shownNotebook.value = v;
     });
 
     watchEffect(
@@ -131,7 +136,7 @@ export default defineComponent({
             urlParams.setParam("notebook", undefined);
             urlParams.setParam("c", undefined);
             urlParams.setParam("name", undefined);
-            // TODO: Keep a periodic localstorage backup
+
             if (notebookStorage.shownNotebook.value && payload.content) {
               notebookStorage.shownNotebook.value.content = payload.content;
             }
@@ -152,11 +157,38 @@ export default defineComponent({
       }
     );
 
+    const storeNotebook = throttle(
+      (notebook: NotebookFile | undefined) => {
+        set("last-notebook", toRaw(notebook));
+      },
+      500,
+      {
+        middle: false, // TODO: is this a bug with the library?
+      }
+    );
+
+    watch(
+      notebookStorage.shownNotebook,
+      (notebook) => {
+        storeNotebook(notebook);
+      },
+      { immediate: true, deep: true }
+    );
+
     // TODO: Global save event listener
+
+    // TODO: Ask user if he has any unsaved changes
+    function newFile() {
+      notebookStorage.shownNotebook.value = {
+        name: "Untitled",
+        content: "",
+      };
+    }
 
     return {
       starboardWrapContainer,
       showSidebar,
+      newFile,
     };
   },
 });
