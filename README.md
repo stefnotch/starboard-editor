@@ -8,8 +8,8 @@
 - [x] Local filesystem access
 - [ ] Import/export as markdown
 - [ ] Edit source code mode
-- [ ] Localstorage backups
-- [x] Encode it in the URL compressed
+- [x] Remember last notebook
+- [x] Encode notebook in URL
 - [ ] Offline support
 - [ ] Dark mode
 - [ ] Add common plugins
