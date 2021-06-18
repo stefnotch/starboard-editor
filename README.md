@@ -4,13 +4,13 @@
 
 ## Features (WIP)
 
-- Dragging and dropping notebooks
-- Local filesystem access
-- Import/export as markdown
-- Edit source code mode
-- Localstorage backups
-- Encode it in the URL compressed
-- Offline support
-- Dark mode
-- Add common plugins
-- Sympy support
+- [ ] Dragging and dropping notebooks
+- [x] Local filesystem access
+- [ ] Import/export as markdown
+- [ ] Edit source code mode
+- [ ] Localstorage backups
+- [x] Encode it in the URL compressed
+- [ ] Offline support
+- [ ] Dark mode
+- [ ] Add common plugins
+- [ ] Sympy support

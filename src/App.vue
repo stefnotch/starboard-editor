@@ -2,7 +2,9 @@
   <nav class="navbar is-transparent">
     <a
       role="button"
-      class="navbar-burger menu-burger is-active"
+      class="navbar-burger menu-burger"
+      :class="{ 'is-active': showSidebar }"
+      @click="showSidebar = !showSidebar"
       aria-label="menu"
       aria-expanded="false"
     >
@@ -13,6 +15,7 @@
     <div class="navbar-item has-dropdown is-hoverable">
       <a class="navbar-link"> File </a>
       <div class="navbar-dropdown is-boxed">
+        <!-- TODO: Hook those buttons up -->
         <a class="navbar-item"> New File </a>
         <a class="navbar-item"> Open File </a>
         <hr class="navbar-divider" />
@@ -23,9 +26,15 @@
     </div>
   </nav>
   <div class="columns is-gapless full-height">
-    <side-bar class="column is-one-fifth"></side-bar>
+    <side-bar
+      class="column is-one-fifth side-bar"
+      :class="{ 'show-sidebar': showSidebar }"
+    ></side-bar>
     <div ref="starboardWrapContainer" class="starboard-container column"></div>
-    <div class="column is-one-fifth"></div>
+    <div
+      class="column is-one-fifth"
+      :class="{ 'is-hidden': !showSidebar }"
+    ></div>
   </div>
 </template>
 
@@ -47,33 +56,37 @@ function beforeUnloadCallback(e: BeforeUnloadEvent) {
 
 window.addEventListener("beforeunload", beforeUnloadCallback);
 
+async function getInitialNotebookContent(
+  urlParams: ReturnType<typeof useURLParams>
+) {
+  const urlsCompressed = urlParams.getParam("c");
+  let content = "";
+  if (urlsCompressed) {
+    const compression = await useCompression();
+    content = compression.decompressFromUrl(
+      urlParams.getParam("notebook") ?? ""
+    );
+  } else {
+    content = urlParams.getParam("notebook") ?? "";
+  }
+
+  if (!content) {
+    // TODO: Load notebook from localstorage
+    content = "";
+  }
+
+  return content;
+}
+
 export default defineComponent({
   components: { SideBar },
   setup() {
     const starboardWrapContainer = ref<HTMLElement>();
 
-    const urlParams = useURLParams();
-    const urlsCompressed = urlParams.getParam("c");
-    let initialNotebookContent = Promise.resolve("");
-    if (urlsCompressed) {
-      const compression = useCompression();
-      initialNotebookContent = compression.then((c) =>
-        c.decompressFromUrl(urlParams.getParam("notebook") ?? "")
-      );
-    } else {
-      initialNotebookContent = Promise.resolve(
-        urlParams.getParam("notebook") ?? ""
-      );
-    }
+    const showSidebar = ref(true);
 
-    initialNotebookContent = initialNotebookContent.then(async (v) => {
-      if (v) {
-        return v;
-      } else {
-        // TODO: Load notebook from localstorage
-        return "";
-      }
-    });
+    const urlParams = useURLParams();
+    let initialNotebookContent = getInitialNotebookContent(urlParams);
 
     const notebookStorage = useNotebookStorage();
     initialNotebookContent.then((v) => {
@@ -143,14 +156,31 @@ export default defineComponent({
 
     return {
       starboardWrapContainer,
+      showSidebar,
     };
   },
 });
 </script>
 <style scoped>
-side-bar {
+/* custom selectors don't work with vue components */
+.side-bar {
   height: 100%;
   overflow: auto;
+  border-right: 1px solid #bbbbbb;
+  display: none;
+  background: white;
+}
+.show-sidebar {
+  display: initial;
+  animation: showSidebar 250ms ease-in-out both;
+}
+@keyframes showSidebar {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0%);
+  }
 }
 </style>
 <style>
