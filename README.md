@@ -2,6 +2,14 @@
 
 [Starboard Editor](https://stefnotch.github.io/starboard-editor/)
 
+## Want to support me?
+
+Donate to one of those libraries instead. Or support some other open source project that you like!
+
+- [Mathlive](https://github.com/arnog/mathlive)
+- [Pyodide](https://github.com/iodide-project/pyodide/)
+- [Starboard](https://github.com/gzuidhof/starboard-notebook)
+
 ## Features (WIP)
 
 - [ ] Edit source code mode
