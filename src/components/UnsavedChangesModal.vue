@@ -29,8 +29,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-
-export type ModalCloseStatus = "ok" | "discard" | "cancel";
+import { ModalCloseStatus } from "./useUnsavedChangesModal";
 
 export default defineComponent({
   components: {},

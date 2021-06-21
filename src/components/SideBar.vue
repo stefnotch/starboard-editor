@@ -9,7 +9,7 @@
           </button>
         </li>
         <li>
-          <button class="button is-small is-fullwidth" @click="saveFile">
+          <button class="button is-small is-fullwidth" @click="saveShownFile">
             Save File
           </button>
         </li>
@@ -62,6 +62,7 @@ import {
 } from "browser-fs-access";
 import { useNotebookStorage } from "../useNotebookStorage";
 import { useCompression } from "../useCompression";
+import { useUnsavedChangesModal } from "./useUnsavedChangesModal";
 
 type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T;
 
@@ -75,6 +76,7 @@ export default defineComponent({
     }
 
     const notebookStorage = useNotebookStorage();
+    const unsavedChangesModal = useUnsavedChangesModal();
 
     // TODO: Lazy loader function
     let compression: null | Awaited<ReturnType<typeof useCompression>> = null;
@@ -84,6 +86,10 @@ export default defineComponent({
     // Open file --> added to file storage (which reads the text, notes it down in the indexeddb, ...)
     // When the user hits "save" --> file saved (disk and indexeddb, file storage takes care of it)
     async function openFile() {
+      if (!(await unsavedChangesModal.showIfUnsavedChanges(notebookStorage))) {
+        return;
+      }
+
       try {
         const selectedFiles = await fileOpen({
           extensions: [".md", ".sb", ".nb"],
@@ -108,23 +114,15 @@ export default defineComponent({
       }
     }
 
-    async function saveFile() {
-      try {
-        const notebook = notebookStorage.shownNotebook.value;
-
-        if (notebook) {
-          notebookStorage.hasUnsavedChanges.value = false;
-          await notebookStorage.saveFile(notebook);
-        }
-      } catch (err) {
-        if (err.name !== "AbortError") {
-          return console.error(err);
-        }
-      }
+    function saveShownFile() {
+      return notebookStorage.saveShownFile();
     }
 
-    function showFile(id: string) {
-      return notebookStorage.showFile(id);
+    async function showFile(id: string) {
+      if (!(await unsavedChangesModal.showIfUnsavedChanges(notebookStorage))) {
+        return;
+      }
+      await notebookStorage.showFile(id);
     }
 
     async function shareNotebook() {
@@ -168,7 +166,7 @@ export default defineComponent({
 
     return {
       openFile,
-      saveFile,
+      saveShownFile,
       files: notebookStorage.files,
       showFile,
       shareNotebook,

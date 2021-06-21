@@ -114,6 +114,23 @@ export function useNotebookStorage() {
     );
   }
 
+  async function saveShownFile() {
+    try {
+      const notebook = shownNotebook.value;
+
+      if (notebook) {
+        hasUnsavedChanges.value = false;
+        await saveFile(notebook);
+      }
+    } catch (err) {
+      if (err.name === "AbortError") {
+        return;
+      } else {
+        throw err;
+      }
+    }
+  }
+
   // TODO: Rename function
   // TODO: Close function
 
@@ -122,6 +139,7 @@ export function useNotebookStorage() {
     addFile,
     showFile,
     saveFile,
+    saveShownFile,
     shownNotebook,
     files: computed(() =>
       Array.from(files.values()).map((v) => {

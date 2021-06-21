@@ -48,7 +48,10 @@
 import { ref, defineComponent, watchEffect, watch, computed, toRaw } from "vue";
 import SideBar from "./components/SideBar.vue";
 import UnsavedChangesModal from "./components/UnsavedChangesModal.vue";
-import { ModalCloseStatus } from "./components/UnsavedChangesModal.vue";
+import {
+  ModalCloseStatus,
+  useUnsavedChangesModal,
+} from "./components/useUnsavedChangesModal";
 import { StarboardEmbed } from "starboard-wrap";
 import { useURLParams } from "./useUrlParams";
 import { useCompression } from "./useCompression";
@@ -92,43 +95,6 @@ async function getInitialNotebook(urlParams: ReturnType<typeof useURLParams>) {
   return notebook;
 }
 
-function useUnsavedChangesModal() {
-  const isShowing = ref(false);
-
-  let resolvePromise: ((value: ModalCloseStatus) => void) | null = null;
-  let rejectPromise: ((reason?: any) => void) | null = null;
-
-  function closeCallback(status: ModalCloseStatus) {
-    console.log(status);
-    isShowing.value = false;
-    if (status === "ok" && resolvePromise) {
-      resolvePromise(status);
-    } else if (status === "discard" && resolvePromise) {
-      resolvePromise(status);
-    } else if (status === "cancel" && resolvePromise) {
-      resolvePromise(status);
-    } else if (rejectPromise) {
-      rejectPromise("Unknown status " + status);
-    } else {
-      throw new Error("Something went wrong with the unsaved changes modal");
-    }
-  }
-
-  function showModal() {
-    return new Promise<ModalCloseStatus>((resolve, reject) => {
-      resolvePromise = resolve;
-      rejectPromise = reject;
-      isShowing.value = true;
-    });
-  }
-
-  return {
-    isShowing,
-    closeCallback,
-    showModal,
-  };
-}
-
 export default defineComponent({
   components: { SideBar, UnsavedChangesModal },
   setup() {
@@ -170,7 +136,7 @@ export default defineComponent({
             if (notebookStorage.shownNotebook.value && payload.content) {
               notebookStorage.shownNotebook.value.content = payload.content;
             }
-            saveFile();
+            notebookStorage.saveShownFile();
           },
           onContentUpdateMessage: (payload) => {
             notebookStorage.hasUnsavedChanges.value = true;
@@ -216,28 +182,11 @@ export default defineComponent({
       { immediate: true, deep: true }
     );
 
-    async function saveFile() {
-      if (notebookStorage.shownNotebook.value) {
-        notebookStorage.hasUnsavedChanges.value = false;
-        await notebookStorage.saveFile(notebookStorage.shownNotebook.value);
-      }
-    }
-
     // TODO: Global save event listener
 
-    // TODO: Ask user if he has any unsaved changes
     async function newFile() {
-      if (notebookStorage.hasUnsavedChanges) {
-        const returnStatus = await unsavedChangesModal.showModal();
-        if (returnStatus === "ok") {
-          // First save the notebook
-          await saveFile();
-        } else if (returnStatus === "discard") {
-          // Do nothing
-        } else if (returnStatus === "cancel") {
-          // Don't create a new notebook
-          return;
-        }
+      if (!(await unsavedChangesModal.showIfUnsavedChanges(notebookStorage))) {
+        return;
       }
       notebookStorage.shownNotebook.value = {
         name: "Untitled",
