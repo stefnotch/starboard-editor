@@ -38,17 +38,23 @@
       :class="{ 'is-hidden': !showSidebar }"
     ></div>
   </div>
+  <unsaved-changes-modal
+    v-if="unsavedChangesModal.isShowing.value"
+    v-on:close="(ev) => unsavedChangesModal.closeCallback(ev)"
+  ></unsaved-changes-modal>
 </template>
 
 <script lang="ts">
 import { ref, defineComponent, watchEffect, watch, computed, toRaw } from "vue";
 import SideBar from "./components/SideBar.vue";
+import UnsavedChangesModal from "./components/UnsavedChangesModal.vue";
+import { ModalCloseStatus } from "./components/UnsavedChangesModal.vue";
 import { StarboardEmbed } from "starboard-wrap";
 import { useURLParams } from "./useUrlParams";
 import { useCompression } from "./useCompression";
 import { NotebookFile, useNotebookStorage } from "./useNotebookStorage";
 import { get, set } from "idb-keyval";
-import { debounce, throttle } from "@github/mini-throttle";
+import { throttle } from "@github/mini-throttle";
 
 let waitBeforeUnload = false;
 function beforeUnloadCallback(e: BeforeUnloadEvent) {
@@ -86,12 +92,50 @@ async function getInitialNotebook(urlParams: ReturnType<typeof useURLParams>) {
   return notebook;
 }
 
+function useUnsavedChangesModal() {
+  const isShowing = ref(false);
+
+  let resolvePromise: ((value: ModalCloseStatus) => void) | null = null;
+  let rejectPromise: ((reason?: any) => void) | null = null;
+
+  function closeCallback(status: ModalCloseStatus) {
+    console.log(status);
+    isShowing.value = false;
+    if (status === "ok" && resolvePromise) {
+      resolvePromise(status);
+    } else if (status === "discard" && resolvePromise) {
+      resolvePromise(status);
+    } else if (status === "cancel" && resolvePromise) {
+      resolvePromise(status);
+    } else if (rejectPromise) {
+      rejectPromise("Unknown status " + status);
+    } else {
+      throw new Error("Something went wrong with the unsaved changes modal");
+    }
+  }
+
+  function showModal() {
+    return new Promise<ModalCloseStatus>((resolve, reject) => {
+      resolvePromise = resolve;
+      rejectPromise = reject;
+      isShowing.value = true;
+    });
+  }
+
+  return {
+    isShowing,
+    closeCallback,
+    showModal,
+  };
+}
+
 export default defineComponent({
-  components: { SideBar },
+  components: { SideBar, UnsavedChangesModal },
   setup() {
     const starboardWrapContainer = ref<HTMLElement>();
 
     const showSidebar = ref(true);
+    const unsavedChangesModal = useUnsavedChangesModal();
 
     const urlParams = useURLParams();
     let initialNotebook = getInitialNotebook(urlParams);
@@ -105,7 +149,6 @@ export default defineComponent({
       () => (waitBeforeUnload = notebookStorage.hasUnsavedChanges.value)
     );
 
-    // TODO: Popup support! (https://v3.vuejs.org/guide/teleport.html#using-with-vue-components)
     // TODO: Pyodide kernel, sympy support and then make waves about it (sympy community, reddit, hackernews, ..)
 
     /**
@@ -127,10 +170,7 @@ export default defineComponent({
             if (notebookStorage.shownNotebook.value && payload.content) {
               notebookStorage.shownNotebook.value.content = payload.content;
             }
-            if (notebookStorage.shownNotebook.value) {
-              notebookStorage.hasUnsavedChanges.value = false;
-              notebookStorage.saveFile(notebookStorage.shownNotebook.value);
-            }
+            saveFile();
           },
           onContentUpdateMessage: (payload) => {
             notebookStorage.hasUnsavedChanges.value = true;
@@ -176,20 +216,41 @@ export default defineComponent({
       { immediate: true, deep: true }
     );
 
+    async function saveFile() {
+      if (notebookStorage.shownNotebook.value) {
+        notebookStorage.hasUnsavedChanges.value = false;
+        await notebookStorage.saveFile(notebookStorage.shownNotebook.value);
+      }
+    }
+
     // TODO: Global save event listener
 
     // TODO: Ask user if he has any unsaved changes
-    function newFile() {
+    async function newFile() {
+      if (notebookStorage.hasUnsavedChanges) {
+        const returnStatus = await unsavedChangesModal.showModal();
+        if (returnStatus === "ok") {
+          // First save the notebook
+          await saveFile();
+        } else if (returnStatus === "discard") {
+          // Do nothing
+        } else if (returnStatus === "cancel") {
+          // Don't create a new notebook
+          return;
+        }
+      }
       notebookStorage.shownNotebook.value = {
         name: "Untitled",
         content: "",
       };
+      notebookStorage.hasUnsavedChanges.value = false;
     }
 
     return {
       starboardWrapContainer,
       showSidebar,
       newFile,
+      unsavedChangesModal,
     };
   },
 });
@@ -215,11 +276,15 @@ export default defineComponent({
     transform: translateX(0%);
   }
 }
+.full-height {
+  min-height: 0;
+}
 </style>
 <style>
 /* TODO: Fix CSS for small windows (mobile)*/
+/* Seems to happen whenever we have a text editor with an overflow */
+/* Caused by the starboard-insertion-line ?? */
 .starboard-container starboard-embed {
-  display: block;
   padding-right: 8px;
   padding-left: 8px;
 }
