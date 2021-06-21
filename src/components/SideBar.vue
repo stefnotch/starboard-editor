@@ -15,7 +15,11 @@
         </li>
         <!-- TODO: Set sharing options (compression, show if succeeded, ...) -->
         <li>
-          <button class="button is-small is-fullwidth" @click="shareNotebook">
+          <button
+            class="button is-small is-fullwidth"
+            @click="shareNotebook"
+            :class="{ 'share-popup': showSharePopup }"
+          >
             Share Notebook
           </button>
         </li>
@@ -74,6 +78,8 @@ export default defineComponent({
 
     // TODO: Lazy loader function
     let compression: null | Awaited<ReturnType<typeof useCompression>> = null;
+
+    const showSharePopup = ref(false);
 
     // Open file --> added to file storage (which reads the text, notes it down in the indexeddb, ...)
     // When the user hits "save" --> file saved (disk and indexeddb, file storage takes care of it)
@@ -146,7 +152,12 @@ export default defineComponent({
 
         navigator.clipboard.writeText(fullUrl).then(
           function () {
-            /* TODO: clipboard successfully set */
+            showSharePopup.value = true;
+            setTimeout(() => {
+              if (showSharePopup.value) {
+                showSharePopup.value = false;
+              }
+            }, 1000);
           },
           function () {
             /* TODO: clipboard write failed */
@@ -161,6 +172,7 @@ export default defineComponent({
       files: notebookStorage.files,
       showFile,
       shareNotebook,
+      showSharePopup,
     };
   },
 });
@@ -169,5 +181,14 @@ export default defineComponent({
 <style scoped>
 .sidebar {
   padding: 8px;
+}
+.share-popup::after {
+  position: absolute;
+  content: "Copied";
+  transform: translateY(125%);
+  background: white;
+  border: 1px solid black;
+  padding: 4px 8px;
+  border-radius: 8px;
 }
 </style>

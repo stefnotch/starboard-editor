@@ -105,6 +105,7 @@ export default defineComponent({
       () => (waitBeforeUnload = notebookStorage.hasUnsavedChanges.value)
     );
 
+    // TODO: Popup support! (https://v3.vuejs.org/guide/teleport.html#using-with-vue-components)
     // TODO: Pyodide kernel, sympy support and then make waves about it (sympy community, reddit, hackernews, ..)
 
     /**
@@ -216,6 +217,7 @@ export default defineComponent({
 }
 </style>
 <style>
+/* TODO: Fix CSS for small windows (mobile)*/
 .starboard-container starboard-embed {
   display: block;
   padding-right: 8px;
