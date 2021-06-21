@@ -19,7 +19,7 @@
         <a class="navbar-item" @click="newFile()"> New File </a>
         <a class="navbar-item"> Open File </a>
         <hr class="navbar-divider" />
-        <a class="navbar-item"> Save </a>
+        <a class="navbar-item" @click="saveShownFile"> Save </a>
         <a class="navbar-item"> Share </a>
         <hr class="navbar-divider" />
         <a class="navbar-item"> Export Markdown </a>
@@ -195,11 +195,16 @@ export default defineComponent({
       notebookStorage.hasUnsavedChanges.value = false;
     }
 
+    function saveShownFile() {
+      return notebookStorage.saveShownFile();
+    }
+
     return {
       starboardWrapContainer,
       showSidebar,
       newFile,
       unsavedChangesModal,
+      saveShownFile,
     };
   },
 });
