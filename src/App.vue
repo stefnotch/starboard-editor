@@ -149,7 +149,7 @@ export default defineComponent({
             }
           },
           // TODO: If you replace the src with something, make sure that it's still hosted on a different domain!
-          src: "https://unpkg.com/starboard-notebook@0.12.0/dist/index.html",
+          src: "https://unpkg.com/starboard-notebook@0.14.1/dist/index.html",
         })
       );
     }
